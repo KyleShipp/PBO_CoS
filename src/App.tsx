@@ -98,10 +98,11 @@ function App() {
             const net = service.gross - service.offset
             const taxable = net * (1 - service.other / 100)
             const residentialCost = taxable * allocations[service.name] / 100
+            const inputId = `allocation-${service.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
             return <article className="service" key={service.name}>
               <div className="service-top"><div><h3>{service.name}</h3><p>{service.basis}</p></div><span className={`quality ${service.quality.toLowerCase()}`}>{service.quality}</span></div>
               <dl><div><dt>Gross budgeted cost</dt><dd>{money(service.gross)}</dd></div><div><dt>Direct revenue offsets</dt><dd>−{money(service.offset)}</dd></div><div><dt>Net service cost</dt><dd>{money(net)}</dd></div><div><dt>Other / tax-exempt share</dt><dd>{service.other}%</dd></div></dl>
-              <div className="slider-row"><label htmlFor={service.name}>Residential <b>{decimal(allocations[service.name])}%</b> <span>· calculated {service.residential}%</span></label><input id={service.name} type="range" min="0" max="100" value={allocations[service.name]} onChange={(event) => setAllocations({ ...allocations, [service.name]: Number(event.target.value) })} /><label className="nonres">Nonresidential <b>{decimal(100 - allocations[service.name])}%</b></label><button className="reset" onClick={() => setAllocations({ ...allocations, [service.name]: service.residential })}>Reset</button></div>
+              <div className="slider-row"><label htmlFor={inputId}>Residential <b>{decimal(allocations[service.name])}%</b> <span>· calculated {service.residential}%</span></label><input id={inputId} type="range" min="0" max="100" value={allocations[service.name]} onChange={(event) => setAllocations({ ...allocations, [service.name]: Number(event.target.value) })} /><label className="nonres">Nonresidential <b>{decimal(100 - allocations[service.name])}%</b></label><button className="reset" onClick={() => setAllocations({ ...allocations, [service.name]: service.residential })}>Reset</button></div>
               <div className="outcomes"><span>Residential allocated cost <b>{money(residentialCost)}</b></span><span>Nonresidential allocated cost <b>{money(taxable - residentialCost)}</b></span></div>
               <p className="source"><b>Source status:</b> {service.source}</p>
             </article>
