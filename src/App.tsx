@@ -1,5 +1,9 @@
 import { useMemo, useState } from 'react'
+import type { FormEvent } from 'react'
 import './App.css'
+
+const testingPasscode = 'pittsboro-test'
+const accessStorageKey = 'pbo-cos-testing-access'
 
 type Evidence = 'Measured' | 'Proxy' | 'Assumption'
 type Service = {
@@ -36,6 +40,7 @@ const money = (amount: number) =>
 const decimal = (amount: number) => new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(amount)
 
 function App() {
+  const [hasAccess, setHasAccess] = useState(() => sessionStorage.getItem(accessStorageKey) === 'granted')
   const [allocations, setAllocations] = useState(() => Object.fromEntries(services.map((service) => [service.name, service.residential])))
   const summary = useMemo(() => {
     const costs = services.reduce(
@@ -53,6 +58,13 @@ function App() {
       nonresidentialTax: parcels.nonresidential.value * (taxRate / 100),
     }
   }, [allocations])
+
+  if (!hasAccess) {
+    return <AccessGate onAccess={() => {
+      sessionStorage.setItem(accessStorageKey, 'granted')
+      setHasAccess(true)
+    }} />
+  }
 
   return (
     <main>
@@ -107,6 +119,46 @@ function App() {
       </section>
 
       <section className="caveats panel"><p className="eyebrow">Read before interpreting</p><h2>Scope and limitations</h2><ul><li>Vacant and under-development parcels may create Planning and Engineering demand before assessed-value growth appears; development-review fees offset some of that work.</li><li>Town, state, and private streets should not be treated as equivalent Town maintenance liabilities. Full lifecycle replacement costs are outside v1.</li><li>Allocations are estimates, and category averages do not establish the fiscal impact of an individual parcel.</li><li>All illustrative inputs above must be replaced with current adopted-budget figures, adopted amendments, parcel/GIS data, and documented local activity measures.</li></ul></section>
+    </main>
+  )
+}
+
+function AccessGate({ onAccess }: { onAccess: () => void }) {
+  const [passcode, setPasscode] = useState('')
+  const [error, setError] = useState(false)
+
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (passcode === testingPasscode) {
+      onAccess()
+      return
+    }
+    setError(true)
+  }
+
+  return (
+    <main className="access-page">
+      <section className="access-card">
+        <p className="eyebrow">Testing access</p>
+        <h1>Pittsboro Cost of Service</h1>
+        <p>Enter the testing passcode to view the dashboard.</p>
+        <form onSubmit={submit}>
+          <label htmlFor="passcode">Testing passcode</label>
+          <input
+            autoFocus
+            id="passcode"
+            onChange={(event) => {
+              setPasscode(event.target.value)
+              setError(false)
+            }}
+            type="password"
+            value={passcode}
+          />
+          {error && <p className="access-error">That passcode did not match.</p>}
+          <button type="submit">Enter dashboard</button>
+        </form>
+        <p className="footnote">This is a convenience gate only, not security. The passcode is included in the public site code and access lasts only for this browser session.</p>
+      </section>
     </main>
   )
 }

@@ -19,4 +19,4 @@ Property-tax contribution versus allocated service cost is not a conclusion abou
 
 The GitHub Pages workflow deploys the production build on pushes to `main` and can be manually run from the Actions tab for testing. In repository Settings, set **Pages > Build and deployment > Source** to **GitHub Actions**.
 
-GitHub Pages publishes a public static site. It cannot securely protect the dashboard with a password: a client-side password prompt would expose both the password and the site assets. Use a private authenticated hosting service if access control is needed.
+GitHub Pages publishes a public static site. For testing, the dashboard includes a bypassable convenience gate. The initial testing passcode is `pittsboro-test`, configured at the top of `src/App.tsx`; it persists only for the current browser session. It is not security: the passcode and site assets remain publicly available. Use private authenticated hosting if access control is needed.
