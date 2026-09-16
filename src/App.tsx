@@ -13,6 +13,7 @@ type Service = {
   quality: Evidence
 }
 
+// Illustrative municipal property-tax rate in dollars per $100 assessed value; replace with adopted rate.
 const taxRate = 0.3325
 const parcels = {
   residential: { value: 1_120_000_000, acres: 8_900, units: 5_250 },
@@ -94,19 +95,14 @@ function App() {
       <section className="details">
         <div className="section-heading"><div><p className="eyebrow">Sensitivity testing</p><h2>Service allocation model</h2><p>Move a slider to test the Residential share of the remaining taxable service cost. Nonresidential receives the remainder.</p></div><button onClick={() => setAllocations(Object.fromEntries(services.map((service) => [service.name, service.residential])))}>Reset all to calculated</button></div>
         <div className="service-list">
-          {services.map((service) => {
-            const net = service.gross - service.offset
-            const taxable = net * (1 - service.other / 100)
-            const residentialCost = taxable * allocations[service.name] / 100
-            const inputId = `allocation-${service.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
-            return <article className="service" key={service.name}>
-              <div className="service-top"><div><h3>{service.name}</h3><p>{service.basis}</p></div><span className={`quality ${service.quality.toLowerCase()}`}>{service.quality}</span></div>
-              <dl><div><dt>Gross budgeted cost</dt><dd>{money(service.gross)}</dd></div><div><dt>Direct revenue offsets</dt><dd>−{money(service.offset)}</dd></div><div><dt>Net service cost</dt><dd>{money(net)}</dd></div><div><dt>Other / tax-exempt share</dt><dd>{service.other}%</dd></div></dl>
-              <div className="slider-row"><label htmlFor={inputId}>Residential <b>{decimal(allocations[service.name])}%</b> <span>· calculated {service.residential}%</span></label><input id={inputId} type="range" min="0" max="100" value={allocations[service.name]} onChange={(event) => setAllocations({ ...allocations, [service.name]: Number(event.target.value) })} /><label className="nonres">Nonresidential <b>{decimal(100 - allocations[service.name])}%</b></label><button className="reset" onClick={() => setAllocations({ ...allocations, [service.name]: service.residential })}>Reset</button></div>
-              <div className="outcomes"><span>Residential allocated cost <b>{money(residentialCost)}</b></span><span>Nonresidential allocated cost <b>{money(taxable - residentialCost)}</b></span></div>
-              <p className="source"><b>Source status:</b> {service.source}</p>
-            </article>
-          })}
+          {services.map((service) => (
+            <ServiceCard
+              key={service.name}
+              service={service}
+              allocation={allocations[service.name]}
+              onChange={(value) => setAllocations({ ...allocations, [service.name]: value })}
+            />
+          ))}
         </div>
       </section>
 
@@ -117,6 +113,39 @@ function App() {
 
 function Metric({ label, value, detail }: { label: string; value: string; detail: string }) {
   return <article className="metric"><p>{label}</p><strong>{value}</strong><small>{detail}</small></article>
+}
+
+function ServiceCard({ service, allocation, onChange }: { service: Service; allocation: number; onChange: (value: number) => void }) {
+  const net = service.gross - service.offset
+  const taxable = net * (1 - service.other / 100)
+  const residentialCost = taxable * allocation / 100
+  const inputId = `allocation-${service.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
+
+  return (
+    <article className="service">
+      <div className="service-top">
+        <div><h3>{service.name}</h3><p>{service.basis}</p></div>
+        <span className={`quality ${service.quality.toLowerCase()}`}>{service.quality}</span>
+      </div>
+      <dl>
+        <div><dt>Gross budgeted cost</dt><dd>{money(service.gross)}</dd></div>
+        <div><dt>Direct revenue offsets</dt><dd>−{money(service.offset)}</dd></div>
+        <div><dt>Net service cost</dt><dd>{money(net)}</dd></div>
+        <div><dt>Other / tax-exempt share</dt><dd>{service.other}%</dd></div>
+      </dl>
+      <div className="slider-row">
+        <label htmlFor={inputId}>Residential <b>{decimal(allocation)}%</b> <span>· calculated {service.residential}%</span></label>
+        <input id={inputId} type="range" min="0" max="100" value={allocation} onChange={(event) => onChange(Number(event.target.value))} />
+        <label className="nonres">Nonresidential <b>{decimal(100 - allocation)}%</b></label>
+        <button className="reset" onClick={() => onChange(service.residential)}>Reset</button>
+      </div>
+      <div className="outcomes">
+        <span>Residential allocated cost <b>{money(residentialCost)}</b></span>
+        <span>Nonresidential allocated cost <b>{money(taxable - residentialCost)}</b></span>
+      </div>
+      <p className="source"><b>Source status:</b> {service.source}</p>
+    </article>
+  )
 }
 
 function contribution(tax: number, cost: number) {
