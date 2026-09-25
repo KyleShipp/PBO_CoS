@@ -57,16 +57,18 @@ const propertyFundedCost = (service: Service) => (service.gross - service.offset
 const money = (amount: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount)
 const decimal = (amount: number) => new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(amount)
+const offsetMoney = (amount: number) => Math.round(amount) === 0 ? money(0) : `−${money(amount)}`
 
 function App() {
   const [hasAccess, setHasAccess] = useState(() => sessionStorage.getItem(accessStorageKey) === 'granted')
   const [allocations, setAllocations] = useState(() => Object.fromEntries(services.map((service) => [service.name, service.residential])))
+  const [otherAllocations, setOtherAllocations] = useState(() => Object.fromEntries(services.map((service) => [service.name, service.other])))
   const summary = useMemo(() => {
     const costs = services.reduce(
       (total, service) => {
         const fundedCost = propertyFundedCost(service)
         const residential = fundedCost * (allocations[service.name] / 100)
-        return { residential: total.residential + residential, nonresidential: total.nonresidential + fundedCost - residential, other: total.other + fundedCost * (service.other / 100) }
+        return { residential: total.residential + residential, nonresidential: total.nonresidential + fundedCost - residential, other: total.other + fundedCost * (otherAllocations[service.name] / 100) }
       },
       { residential: 0, nonresidential: 0, other: 0 },
     )
@@ -75,7 +77,7 @@ function App() {
       residentialTax: parcels.residential.value * (taxRate / 100),
       nonresidentialTax: parcels.nonresidential.value * (taxRate / 100),
     }
-  }, [allocations])
+  }, [allocations, otherAllocations])
 
   if (!hasAccess) {
     return <AccessGate onAccess={() => {
@@ -129,7 +131,7 @@ function App() {
       </section>
 
       <section className="revenue-panel panel">
-        <div className="section-heading"><div><p className="eyebrow">Adopted revenue mix</p><h2>All General Fund revenue sources</h2><p>Direct-service revenues are assigned where a documented relationship exists. The remaining {money(sharedRevenue)} is distributed proportionally across service costs before Residential and Nonresidential allocation.</p></div><span className="tag">Totals {money(totalBudget)}</span></div>
+        <div className="section-heading"><div><p className="eyebrow">Adopted revenue mix</p><h2>All General Fund revenue sources</h2><p>Direct-service revenues are assigned first. The remaining {money(sharedRevenue)} is divided among services in proportion to each service's cost after its direct revenue offsets, then Residential and Nonresidential shares are applied.</p></div><span className="tag">Totals {money(totalBudget)}</span></div>
         <div className="revenue-grid">
           <Revenue label="Property taxes" value={revenues.propertyTaxes} />
           <Revenue label="Sales taxes" value={revenues.salesTaxes} />
@@ -144,14 +146,19 @@ function App() {
       </section>
 
       <section className="details">
-        <div className="section-heading"><div><p className="eyebrow">Sensitivity testing</p><h2>Service allocation model</h2><p>Move a slider to test the Residential share of property-tax-funded service cost, including the cost associated with tax-exempt properties. Nonresidential receives the remainder.</p></div><button onClick={() => setAllocations(Object.fromEntries(services.map((service) => [service.name, service.residential])))}>Reset all to calculated</button></div>
+        <div className="section-heading"><div><p className="eyebrow">Sensitivity testing</p><h2>Service allocation model</h2><p>Move a slider to test the Residential share and edit the Other / tax-exempt share of property-tax-funded service cost. Nonresidential receives the remainder of the payer allocation. A blue Proxy indicator means the allocation uses an indirect measure because direct local data is not yet available.</p></div><button onClick={() => {
+          setAllocations(Object.fromEntries(services.map((service) => [service.name, service.residential])))
+          setOtherAllocations(Object.fromEntries(services.map((service) => [service.name, service.other])))
+        }}>Reset to initial assumptions</button></div>
         <div className="service-list">
           {services.map((service) => (
             <ServiceCard
               key={service.name}
               service={service}
               allocation={allocations[service.name]}
+              otherAllocation={otherAllocations[service.name]}
               onChange={(value) => setAllocations({ ...allocations, [service.name]: value })}
+              onOtherChange={(value) => setOtherAllocations({ ...otherAllocations, [service.name]: value })}
             />
           ))}
         </div>
@@ -210,31 +217,35 @@ function Revenue({ label, value }: { label: string; value: number }) {
   return <div><span>{label}</span><strong>{money(value)}</strong></div>
 }
 
-function ServiceCard({ service, allocation, onChange }: { service: Service; allocation: number; onChange: (value: number) => void }) {
+function ServiceCard({ service, allocation, otherAllocation, onChange, onOtherChange }: { service: Service; allocation: number; otherAllocation: number; onChange: (value: number) => void; onOtherChange: (value: number) => void }) {
   const net = service.gross - service.offset
   const sharedOffset = net * sharedRevenueRate
   const fundedCost = propertyFundedCost(service)
   const residentialCost = fundedCost * allocation / 100
   const inputId = `allocation-${service.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
+  const otherInputId = `other-${service.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
 
   return (
     <article className="service">
       <div className="service-top">
         <div><h3>{service.name}</h3><p>{service.basis}</p></div>
-        <span className={`quality ${service.quality.toLowerCase()}`}>{service.quality}</span>
+        <span className={`quality ${service.quality.toLowerCase()}`} title={`${service.quality} evidence quality indicator`}>{service.quality}</span>
       </div>
       <dl>
         <div><dt>Gross budgeted cost</dt><dd>{money(service.gross)}</dd></div>
-        <div><dt>Direct revenue offsets</dt><dd>−{money(service.offset)}</dd></div>
-        <div><dt>Shared revenue allocation</dt><dd>−{money(sharedOffset)}</dd></div>
+        <div><dt>Direct revenue offsets</dt><dd>{offsetMoney(service.offset)}</dd></div>
+        <div><dt>Shared revenue allocation</dt><dd>{offsetMoney(sharedOffset)}</dd></div>
         <div><dt>Property-tax-funded cost</dt><dd>{money(fundedCost)}</dd></div>
-        <div><dt>Other / tax-exempt share</dt><dd>{service.other}% · {money(fundedCost * service.other / 100)}</dd></div>
+        <div><dt><label htmlFor={otherInputId}>Other / tax-exempt share</label></dt><dd className="other-allocation"><input id={otherInputId} type="number" min="0" max="100" step="1" value={otherAllocation} onChange={(event) => onOtherChange(Math.min(100, Math.max(0, Number(event.target.value))))} /><span>% · {money(fundedCost * otherAllocation / 100)}</span></dd></div>
       </dl>
       <div className="slider-row">
-        <label htmlFor={inputId}>Residential <b>{decimal(allocation)}%</b> <span>· calculated {service.residential}%</span></label>
+        <label htmlFor={inputId}>Residential <b>{decimal(allocation)}%</b> <span>· initial assumption {service.residential}%</span></label>
         <input id={inputId} type="range" min="0" max="100" value={allocation} onChange={(event) => onChange(Number(event.target.value))} />
         <label className="nonres">Nonresidential <b>{decimal(100 - allocation)}%</b></label>
-        <button className="reset" onClick={() => onChange(service.residential)}>Reset</button>
+        <button className="reset" onClick={() => {
+          onChange(service.residential)
+          onOtherChange(service.other)
+        }}>Reset</button>
       </div>
       <div className="outcomes">
         <span>Residential allocated cost <b>{money(residentialCost)}</b></span>
