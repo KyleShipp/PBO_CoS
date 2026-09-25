@@ -11,9 +11,9 @@ npm run dev
 
 ## Data status
 
-The dashboard uses the Town's FY 2026–27 adopted budget top sheet for the $0.44 property-tax rate and $13,800,300 in gross expenditures. Department amounts are grouped into the dashboard's service categories; General government and legal combines Administration, Finance, Downtown, Governing Board, and Legal. Parcel/GIS inputs, direct-revenue offsets, service-allocation shares, adopted amendments, and local activity measures remain assumptions or outstanding data needs.
+The dashboard uses the Town's FY 2026–27 original adopted budget for the $0.44 property-tax rate, $13,800,300 in gross expenditures, and direct-service revenues. Department amounts are grouped into the dashboard's service categories; General government and legal combines Administration, Finance, Downtown, Governing Board, and Legal. Revenue attribution is analytical rather than a Town cost-allocation policy. Parcel/GIS inputs, service-allocation shares, adopted amendments, and local activity measures remain assumptions or outstanding data needs.
 
-Source: [Town of Pittsboro FY 2026–27 adopted budget top sheet](https://pittsboronc.gov/DocumentCenter/View/7674/FY-26-27-Budget-Top-Sheet_approved)
+Source: [Town of Pittsboro FY 2026–27 adopted budget](https://pittsboronc.gov/DocumentCenter/View/7671/2026-to-2027-Adopted-Budget)
 
 Property-tax contribution versus allocated service cost is not a conclusion about total municipal revenue versus service cost. This version does not allocate sales tax, ABC, franchise, vehicle, or other General Fund revenue.
 
