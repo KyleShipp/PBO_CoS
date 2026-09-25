@@ -17,22 +17,22 @@ type Service = {
   quality: Evidence
 }
 
-// Illustrative municipal property-tax rate in dollars per $100 assessed value; replace with adopted rate.
-const taxRate = 0.3325
+const adoptedBudgetUrl = 'https://pittsboronc.gov/DocumentCenter/View/7674/FY-26-27-Budget-Top-Sheet_approved'
+const taxRate = 0.44
 const parcels = {
   residential: { value: 1_120_000_000, acres: 8_900, units: 5_250 },
   nonresidential: { value: 510_000_000, acres: 3_100 },
 }
 
 const services: Service[] = [
-  { name: 'Police', gross: 3_400_000, offset: 45_000, other: 8, residential: 68, basis: 'Calls for service', source: 'Replace with FY adopted budget and Police presentation', quality: 'Assumption' },
-  { name: 'Fire', gross: 2_250_000, offset: 20_000, other: 6, residential: 62, basis: 'Incident activity and occupancy risk', source: 'Replace with FY adopted budget and Fire presentation', quality: 'Assumption' },
-  { name: 'Public Works & Streets', gross: 1_550_000, offset: 95_000, other: 7, residential: 56, basis: 'Town-maintained lane miles and activity', source: 'Replace with adopted budget and GIS street inventory', quality: 'Assumption' },
-  { name: 'Sanitation', gross: 780_000, offset: 280_000, other: 0, residential: 100, basis: 'Residential collection service', source: 'Replace with sanitation budget and solid-waste fee schedule', quality: 'Assumption' },
-  { name: 'Planning & Engineering', gross: 1_180_000, offset: 390_000, other: 4, residential: 48, basis: 'Development-review workload', source: 'Replace with adopted budget and permit/review fee records', quality: 'Assumption' },
-  { name: 'Recreation', gross: 620_000, offset: 70_000, other: 3, residential: 88, basis: 'Resident participation', source: 'Replace with adopted budget and participation data', quality: 'Assumption' },
-  { name: 'General government & legal', gross: 1_100_000, offset: 0, other: 5, residential: 60, basis: 'Overhead supporting direct services', source: 'Replace with adopted budget', quality: 'Assumption' },
-  { name: 'Debt service', gross: 930_000, offset: 0, other: 5, residential: 55, basis: 'Asset/function attribution pending', source: 'Replace with adopted budget and debt schedule', quality: 'Assumption' },
+  { name: 'Police', gross: 2_732_886, offset: 0, other: 8, residential: 68, basis: 'Calls for service', source: 'FY 2026–27 adopted budget; allocation shares remain assumptions', quality: 'Proxy' },
+  { name: 'Fire', gross: 2_121_371, offset: 0, other: 6, residential: 62, basis: 'Incident activity and occupancy risk', source: 'FY 2026–27 adopted budget; allocation shares remain assumptions', quality: 'Proxy' },
+  { name: 'Public Works & Streets', gross: 1_768_298, offset: 0, other: 7, residential: 56, basis: 'Town-maintained lane miles and activity', source: 'FY 2026–27 adopted budget; allocation shares remain assumptions', quality: 'Proxy' },
+  { name: 'Sanitation', gross: 616_000, offset: 0, other: 0, residential: 100, basis: 'Residential collection service', source: 'FY 2026–27 adopted budget; allocation shares remain assumptions', quality: 'Proxy' },
+  { name: 'Planning & Engineering', gross: 1_390_516, offset: 0, other: 4, residential: 48, basis: 'Development-review workload', source: 'FY 2026–27 Development Services budget; allocation shares remain assumptions', quality: 'Proxy' },
+  { name: 'Recreation', gross: 1_190_318, offset: 0, other: 3, residential: 88, basis: 'Resident participation', source: 'FY 2026–27 Parks & Recreation budget; allocation shares remain assumptions', quality: 'Proxy' },
+  { name: 'General government & legal', gross: 3_063_349, offset: 0, other: 5, residential: 60, basis: 'Overhead supporting direct services', source: 'FY 2026–27 Administration, Finance, Downtown, Governing Board, and Legal budgets; allocation shares remain assumptions', quality: 'Proxy' },
+  { name: 'Debt service', gross: 917_562, offset: 0, other: 5, residential: 55, basis: 'Asset/function attribution pending', source: 'FY 2026–27 adopted budget; allocation shares remain assumptions', quality: 'Proxy' },
 ]
 
 const money = (amount: number) =>
@@ -74,11 +74,11 @@ function App() {
           <h1>Cost of Service</h1>
           <p className="subtitle">A transparent baseline for comparing current Residential and Nonresidential municipal property-tax contribution and allocated service cost.</p>
         </div>
-        <div className="status"><span></span> Illustrative baseline — replace assumptions with Town source data</div>
+        <div className="status"><span></span> FY 2026–27 adopted budget baseline</div>
       </header>
 
       <section className="notice">
-        <strong>Important:</strong> Property-tax contribution versus allocated service cost is not total municipal revenue versus service cost. Sales taxes, ABC revenue, franchise-related revenue, vehicle taxes, and other General Fund revenues are not allocated in this version.
+        <strong>Important:</strong> Gross costs and the $0.44 tax rate come from the <a href={adoptedBudgetUrl}>FY 2026–27 adopted budget</a>. Property-tax contribution versus allocated service cost is not total municipal revenue versus service cost. Department-level revenue offsets are not applied, and tax-base, parcel, and service-allocation inputs remain assumptions.
       </section>
 
       <section className="headline">
@@ -118,7 +118,7 @@ function App() {
         </div>
       </section>
 
-      <section className="caveats panel"><p className="eyebrow">Read before interpreting</p><h2>Scope and limitations</h2><ul><li>Vacant and under-development parcels may create Planning and Engineering demand before assessed-value growth appears; development-review fees offset some of that work.</li><li>Town, state, and private streets should not be treated as equivalent Town maintenance liabilities. Full lifecycle replacement costs are outside v1.</li><li>Allocations are estimates, and category averages do not establish the fiscal impact of an individual parcel.</li><li>All illustrative inputs above must be replaced with current adopted-budget figures, adopted amendments, parcel/GIS data, and documented local activity measures.</li></ul></section>
+      <section className="caveats panel"><p className="eyebrow">Read before interpreting</p><h2>Scope and limitations</h2><ul><li>Vacant and under-development parcels may create Planning and Engineering demand before assessed-value growth appears; development-review fees offset some of that work.</li><li>Town, state, and private streets should not be treated as equivalent Town maintenance liabilities. Full lifecycle replacement costs are outside v1.</li><li>Allocations are estimates, and category averages do not establish the fiscal impact of an individual parcel.</li><li>FY 2026–27 adopted gross expenditures and tax rate are current; parcel/GIS inputs, direct-revenue offsets, allocation shares, adopted amendments, and local activity measures still require documented Town data.</li></ul></section>
     </main>
   )
 }
@@ -195,7 +195,7 @@ function ServiceCard({ service, allocation, onChange }: { service: Service; allo
         <span>Residential allocated cost <b>{money(residentialCost)}</b></span>
         <span>Nonresidential allocated cost <b>{money(taxable - residentialCost)}</b></span>
       </div>
-      <p className="source"><b>Source status:</b> {service.source}</p>
+      <p className="source"><b>Source status:</b> {service.source}. <a href={adoptedBudgetUrl}>View adopted budget</a>.</p>
     </article>
   )
 }
