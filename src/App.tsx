@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import './App.css'
+import varaGovLogo from './assets/varagov-logo.png'
 
 const testingPasscode = 'pittsboro-test'
 const accessStorageKey = 'pbo-cos-testing-access'
@@ -89,10 +90,13 @@ function App() {
   return (
     <main>
       <header>
-        <div>
-          <p className="eyebrow">Pittsboro, North Carolina</p>
-          <h1>Cost of Service</h1>
-          <p className="subtitle">A transparent baseline for comparing current Residential and Nonresidential municipal property-tax contribution and allocated service cost.</p>
+        <div className="brand">
+          <img className="varagov-logo" src={varaGovLogo} alt="VaraGov" />
+          <div>
+            <p className="eyebrow">Pittsboro, North Carolina</p>
+            <h1>Cost of Service</h1>
+            <p className="subtitle">A transparent baseline for comparing current Residential and Nonresidential municipal property-tax contribution and allocated service cost.</p>
+          </div>
         </div>
         <div className="status"><span></span> FY 2026–27 original adopted budget baseline</div>
       </header>
@@ -185,8 +189,13 @@ function AccessGate({ onAccess }: { onAccess: () => void }) {
   return (
     <main className="access-page">
       <section className="access-card">
-        <p className="eyebrow">Testing access</p>
-        <h1>Pittsboro Cost of Service</h1>
+        <div className="access-brand">
+          <img className="varagov-logo" src={varaGovLogo} alt="VaraGov" />
+          <div>
+            <p className="eyebrow">Testing access</p>
+            <h1>Pittsboro Cost of Service</h1>
+          </div>
+        </div>
         <p>Enter the testing passcode to view the dashboard.</p>
         <form onSubmit={submit}>
           <label htmlFor="passcode">Testing passcode</label>
